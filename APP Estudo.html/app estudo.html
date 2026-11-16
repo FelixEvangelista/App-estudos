@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EstudoPro - Suíte Completa</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #22c55e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        
+        /* Menu Lateral */
+        nav { width: 220px; background: var(--card); padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #334155; }
+        nav h2 { font-size: 1.2rem; margin-bottom: 20px; color: var(--accent); }
+        nav button { background: transparent; border: none; color: var(--text); text-align: left; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        nav button:hover, nav button.active { background: var(--accent); }
+
+        /* Área Principal */
+        main { flex: 1; padding: 30px; max-width: 1050px; margin: 0 auto; width: 100%; }
+        .tab { display: none; }
+        .tab.active { display: block; }
+        .card { background: var(--card); padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h2 { margin-bottom: 15px; }
+
+        /* Botões e Inputs Gerais */
+        .btn { padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; background: var(--accent); transition: 0.2s; font-size: 0.9rem; }
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); color: #0f172a; }
+        .btn-success { background: var(--success); color: #0f172a; }
+        input[type="text"], textarea, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-bottom: 10px; }
+
+        /* Pomodoro */
+        .timer-display { font-size: 4.5rem; font-weight: bold; text-align: center; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        .controls { display: flex; justify-content: center; gap: 15px; }
+
+        /* Lista de Tarefas */
+        .todo-input { display: flex; gap: 10px; }
+        .todo-input input { margin-bottom: 0; }
+        ul { list-style: none; margin-top: 15px; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; margin-bottom: 8px; border-radius: 6px; }
+        li.done span { text-decoration: line-through; opacity: 0.6; }
+
+        /* Flashcards */
+        .fc-stats { display: flex; gap: 15px; margin-bottom: 20px; color: var(--muted); font-size: 0.95rem; }
+        .flashcard-box { background: #0f172a; border: 2px solid #334155; border-radius: 12px; min-height: 220px; padding: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .flashcard-box:hover { border-color: var(--accent); }
+        .fc-badge { position: absolute; top: 15px; left: 15px; background: #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; color: var(--accent); font-weight: bold; }
+        .fc-side { position: absolute; top: 15px; right: 15px; font-size: 0.8rem; color: var(--muted); }
+        .fc-content { font-size: 1.3rem; line-height: 1.5; white-space: pre-wrap; }
+        .fc-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .fc-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; border-radius: 6px; margin-top: 8px; font-size: 0.9rem; }
+
+        /* Simulado & Quiz */
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #334155; }
+        .quiz-meta { display: flex; gap: 10px; font-size: 0.85rem; }
+        .tag { background: #334155; padding: 4px 10px; border-radius: 6px; color: var(--accent); font-weight: bold; }
+        .question-text { font-size: 1.15rem; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
+        .option-btn { display: block; width: 100%; text-align: left; padding: 14px; margin-bottom: 10px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: var(--text); cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .option-btn:hover:not(:disabled) { border-color: var(--accent); background: #1e293b; }
+        .option-btn.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); color: #86efac; font-weight: bold; }
+        .option-btn.wrong { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
+        .comment-box { margin-top: 15px; padding: 15px; background: #0f172a; border-left: 4px solid var(--accent); border-radius: 6px; display: none; line-height: 1.5; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Mapa Mental */
+        .mm-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 15px; background: #0f172a; padding: 12px; border-radius: 8px; }
+        .mm-toolbar select { width: auto; margin-bottom: 0; }
+        .mm-canvas { position: relative; width: 100%; height: 520px; background: #0b1120; background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px; border: 2px solid #334155; border-radius: 12px; overflow: hidden; user-select: none; touch-action: none; }
+        .mm-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .mm-node { position: absolute; padding: 10px 16px; border-radius: 10px; background: #1e293b; border: 2px solid var(--accent); color: white; font-weight: 600; font-size: 0.95rem; cursor: grab; transform: translate(-50%, -50%); max-width: 210px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); transition: box-shadow 0.15s, border-color 0.15s; z-index: 2; }
+        .mm-node:active { cursor: grabbing; }
+        .mm-node.selected { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); border-color: #fff !important; z-index: 3; }
+        .mm-node.level-0 { background: var(--accent); border-color: #93c5fd; font-size: 1.1rem; padding: 14px 20px; }
+        .mm-node.level-1 { background: #1e293b; border-color: var(--success); }
+        .mm-node.level-2 { background: #1e293b; border-color: var(--warning); font-size: 0.88rem; }
+        .mm-node.level-3 { background: #1e293b; border-color: #a855f7; font-size: 0.85rem; }
+        .mm-hint { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
+
+        @media (max-width: 700px) {
+            body { flex-direction: column; }
+            nav { width: 100%; flex-direction: row; overflow-x: auto; }
+            nav h2 { display: none; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <h2>📚 EstudoPro</h2>
+        <button class="active" onclick="openTab('pomodoro', this)">⏱️ Pomodoro & Tarefas</button>
+        <button onclick="openTab('flashcards', this)">🗂️ Flashcards</button>
+        <button onclick="openTab('simulado', this)">📝 Simulado & Quiz</button>
+        <button onclick="openTab('mapa', this)">🧠 Mapa Mental</button>
+    </nav>
+
+    <main>
+        <!-- ABA 1: POMODORO E TAREFAS -->
+        <section id="pomodoro" class="tab active">
+            <div class="card">
+                <h2>Cronômetro Pomodoro</h2>
+                <div class="timer-display" id="timer">25:00</div>
+                <div class="controls">
+                    <button class="btn" onclick="startTimer()">Iniciar</button>
+                    <button class="btn" onclick="pauseTimer()">Pausar</button>
+                    <button class="btn btn-danger" onclick="resetTimer()">Resetar</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Metas de Estudo (Tarefas)</h2>
+                <div class="todo-input">
+                    <input type="text" id="taskInput" placeholder="Ex: Revisar Direito Constitucional...">
+                    <button class="btn" onclick="addTask()">Adicionar</button>
+                </div>
+                <ul id="taskList"></ul>
+            </div>
+        </section>
+
+        <!-- ABA 2: FLASHCARDS -->
+        <section id="flashcards" class="tab">
+            <div class="card">
+                <h2>Revisão Diária (Repetição Espaçada)</h2>
+                <div class="fc-stats">
+                    <span>Para revisar hoje: <strong id="dueCount" style="color: var(--warning);">0</strong></span>
+                    <span>Total no baralho: <strong id="totalCount" style="color: var(--text);">0</strong></span>
+                </div>
+
+                <div id="studyArea">
+                    <div class="flashcard-box" onclick="flipCard()">
+                        <span class="fc-badge" id="fcDeck">Matéria</span>
+                        <span class="fc-side" id="fcSide">PERGUNTA (Clique para virar)</span>
+                        <div class="fc-content" id="fcText">Nenhuma carta para revisar agora!</div>
+                    </div>
+
+                    <div class="fc-actions" id="fcRatingButtons" style="display: none;">
+                        <button class="btn btn-danger" onclick="rateCard(0)">Errei (Hoje)</button>
+                        <button class="btn btn-warning" onclick="rateCard(1)">Difícil (1 dia)</button>
+                        <button class="btn" onclick="rateCard(3)">Bom (3 dias)</button>
+                        <button class="btn btn-success" onclick="rateCard(7)">Fácil (7 dias)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Criar Novo Flashcard</h2>
+                <input type="text" id="fcSubject" placeholder="Matéria (Ex: Direito Administrativo, Português...)">
+                <textarea id="fcFront" rows="2" placeholder="Frente (Pergunta ou conceito)"></textarea>
+                <textarea id="fcBack" rows="3" placeholder="Verso (Resposta ou artigo de lei)"></textarea>
+                <button class="btn" onclick="createFlashcard()">Salvar Flashcard</button>
+
+                <details style="margin-top: 20px; color: var(--muted); cursor: pointer;">
+                    <summary>Gerenciar cartas salvas</summary>
+                    <div id="fcAllList" style="margin-top: 10px;"></div>
+                </details>
+            </div>
+        </section>
+
+        <!-- ABA 3: SIMULADO DE CONCURSOS & QUIZ -->
+        <section id="simulado" class="tab">
+            <div class="card">
+                <div class="quiz-header">
+                    <div>
+                        <h2 style="margin-bottom: 5px;">Simulado de Concursos</h2>
+                        <span style="color: var(--muted); font-size: 0.9rem;">
+                            Acertos: <strong id="qScore" style="color: var(--success);">0</strong> / <strong id="qAnswered">0</strong> 
+                            (<span id="qPercent">0%</span>)
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="qFilterSubject" onchange="startQuiz()" style="margin-bottom: 0; width: auto;">
+                            <option value="ALL">Todas as Matérias</option>
+                        </select>
+                        <button class="btn btn-warning" onclick="resetQuizScore()" style="padding: 8px 12px;">Zerar Placar</button>
+                    </div>
+                </div>
+
+                <div id="quizContainer">
+                    <div class="quiz-meta" style="margin-bottom: 12px;">
+                        <span class="tag" id="qSubjectTag">Matéria</span>
+                        <span class="tag" id="qBoardTag" style="color: var(--warning);">Banca</span>
+                    </div>
+                    <div class="question-text" id="qStatement">Carregando questão...</div>
+                    <div id="qOptions"></div>
+                    <div class="comment-box" id="qComment"></div>
+                    <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                        <button class="btn" id="nextQBtn" onclick="nextQuestion()">Próxima Questão ➔</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Adicionar Questão de Concurso</h2>
+                <div class="grid-2">
+                    <input type="text" id="newQSubject" placeholder="Matéria (Ex: Direito Administrativo)">
+                    <input type="text" id="newQBoard" placeholder="Banca / Ano (Ex: CEBRASPE 2025, FGV...)">
+                </div>
+                <select id="newQType" onchange="toggleQuestionFormType()">
+                    <option value="MC">Múltipla Escolha (A, B, C, D, E)</option>
+                    <option value="CE">Certo ou Errado (Estilo Cebraspe)</option>
+                </select>
+                <textarea id="newQStatement" rows="3" placeholder="Enunciado da questão..."></textarea>
+                
+                <div id="mcFields">
+                    <input type="text" id="optA" placeholder="Alternativa A">
+                    <input type="text" id="optB" placeholder="Alternativa B">
+                    <input type="text" id="optC" placeholder="Alternativa C">
+                    <input type="text" id="optD" placeholder="Alternativa D">
+                    <input type="text" id="optE" placeholder="Alternativa E (Opcional)">
+                    <select id="correctMC">
+                        <option value="0">Gabarito: Letra A</option>
+                        <option value="1">Gabarito: Letra B</option>
+                        <option value="2">Gabarito: Letra C</option>
+                        <option value="3">Gabarito: Letra D</option>
+                        <option value="4">Gabarito: Letra E</option>
+                    </select>
+                </div>
+
+                <div id="ceFields" style="display: none;">
+                    <select id="correctCE">
+                        <option value="0">Gabarito: CERTO</option>
+                        <option value="1">Gabarito: ERRADO</option>
+                    </select>
+                </div>
+
+                <textarea id="newQComment" rows="2" placeholder="Gabarito Comentado (Explicação / Base Legal)..."></textarea>
+                <button class="btn" onclick="saveNewQuestion()">Salvar Questão no Banco</button>
+            </div>
+        </section>
+
+        <!-- ABA 4: MAPA MENTAL -->
+        <section id="mapa" class="tab">
+            <div class="card">
+                <h2>Mapa Mental Interativo</h2>
+                
+                <div class="mm-toolbar">
+                    <select id="mmMapSelect" onchange="switchMindMap()"></select>
+                    <button class="btn" onclick="createNewMindMap()">+ Novo Mapa</button>
+                    <button class="btn btn-success" onclick="addChildNode()">+ Ramificar Nó</button>
+                    <button class="btn btn-warning" onclick="editSelectedNode()">✏️ Editar Texto</button>
+                    <button class="btn btn-danger" onclick="deleteSelectedNode()">🗑️ Excluir Nó</button>
+                </div>
+
+                <div class="mm-canvas" id="mmCanvas">
+                    <svg class="mm-svg" id="mmSvg"></svg>
+                </div>
+                
+                <p class="mm-hint">
+                    💡 <strong>Dicas:</strong> Clique em um bloco para selecioná-lo • Arraste para reposicionar • Dê <strong>duplo clique</strong> em qualquer bloco para editar o texto rapidamente.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ================= NAVEGAÇÃO =================
+        function openTab(tabId, btn) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+            if (tabId === 'flashcards') loadStudySession();
+            if (tabId === 'simulado') initQuizTab();
+            if (tabId === 'mapa') renderMindMap();
+        }
+
+        // ================= POMODORO =================
+        let timeLeft = 25 * 60;
+        let timerInterval = null;
+
+        function updateDisplay() {
+            const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+            const secs = String(timeLeft % 60).padStart(2, '0');
+            document.getElementById('timer').textContent = `${mins}:${secs}`;
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) { timeLeft--; updateDisplay(); }
+                else { clearInterval(timerInterval); timerInterval = null; alert("Tempo esgotado! Hora de uma pausa."); }
+            }, 1000);
+        }
+
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); timeLeft = 25 * 60; updateDisplay(); }
+
+        // ================= TAREFAS =================
+        let tasks = JSON.parse(localStorage.getItem('estudo_tasks')) || [];
+
+        function saveAndRenderTasks() {
+            localStorage.setItem('estudo_tasks', JSON.stringify(tasks));
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                if (task.done) li.classList.add('done');
+                li.innerHTML = `
+                    <span onclick="toggleTask(${index})" style="cursor:pointer; flex:1;">${task.text}</span>
+                    <button class="btn btn-danger" style="padding: 4px 10px;" onclick="deleteTask(${index})">X</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            if (!input.value.trim()) return;
+            tasks.push({ text: input.value, done: false });
+            input.value = '';
+            saveAndRenderTasks();
+        }
+        function toggleTask(i) { tasks[i].done = !tasks[i].done; saveAndRenderTasks(); }
+        function deleteTask(i) { tasks.splice(i, 1); saveAndRenderTasks(); }
+        saveAndRenderTasks();
+
+        // ================= FLASHCARDS =================
+        let flashcards = JSON.parse(localStorage.getItem('estudo_flashcards')) || [
+            { id: 1, subject: 'Direito Constitucional', front: 'Quais são os 5 fundamentos da República Federativa do Brasil (Art. 1º CF/88)?', back: 'SO-CI-DI-VA-PLU:\n1. Soberania\n2. Cidadania\n3. Dignidade da pessoa humana\n4. Valores sociais do trabalho e da livre iniciativa\n5. Pluralismo político', nextReview: Date.now(), interval: 0 }
+        ];
+        let dueCards = [];
+        let currentCard = null;
+        let isFlipped = false;
+
+        function saveFlashcards() {
+            localStorage.setItem('estudo_flashcards', JSON.stringify(flashcards));
+            renderAllFlashcards();
+        }
+
+        function createFlashcard() {
+            const subject = document.getElementById('fcSubject').value.trim() || 'Geral';
+            const front = document.getElementById('fcFront').value.trim();
+            const back = document.getElementById('fcBack').value.trim();
+            if (!front || !back) return alert('Preencha a frente e o verso da carta!');
+
+            flashcards.push({ id: Date.now(), subject, front, back, nextReview: Date.now(), interval: 0 });
+            document.getElementById('fcFront').value = '';
+            document.getElementById('fcBack').value = '';
+            saveFlashcards();
+            loadStudySession();
+        }
+
+        function loadStudySession() {
+            const now = Date.now();
+            dueCards = flashcards.filter(c => c.nextReview <= now);
+            document.getElementById('dueCount').textContent = dueCards.length;
+            document.getElementById('totalCount').textContent = flashcards.length;
+            renderAllFlashcards();
+
+            if (dueCards.length === 0) {
+                currentCard = null;
+                document.getElementById('fcDeck').textContent = 'Concluído';
+                document.getElementById('fcSide').textContent = '';
+                document.getElementById('fcText').textContent = '🎉 Você revisou todas as cartas programadas para hoje!';
+                document.getElementById('fcRatingButtons').style.display = 'none';
+                return;
+            }
+
+            currentCard = dueCards[0];
+            isFlipped = false;
+            document.getElementById('fcDeck').textContent = currentCard.subject;
+            document.getElementById('fcSide').textContent = 'PERGUNTA (Clique na caixa para virar)';
+            document.getElementById('fcText').textContent = currentCard.front;
+            document.getElementById('fcRatingButtons').style.display = 'none';
+        }
+
+        function flipCard() {
+            if (!currentCard) return;
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                document.getElementById('fcSide').textContent = 'RESPOSTA';
+                document.getElementById('fcText').textContent = currentCard.back;
+                document.getElementById('fcRatingButtons').style.display = 'flex';
+            } else {
+                document.getElementById('fcSide').textContent = 'PERGUNTA (Clique na caixa para virar)';
+                document.getElementById('fcText').textContent = currentCard.front;
+                document.getElementById('fcRatingButtons').style.display = 'none';
+            }
+        }
+
+        function rateCard(days) {
+            if (!currentCard) return;
+            const cardIndex = flashcards.findIndex(c => c.id === currentCard.id);
+            if (days === 0) {
+                flashcards[cardIndex].interval = 0;
+                flashcards[cardIndex].nextReview = Date.now();
+                flashcards.push(flashcards.splice(cardIndex, 1)[0]);
+            } else {
+                const newInterval = flashcards[cardIndex].interval > 0 ? Math.round(flashcards[cardIndex].interval * 1.5) + days : days;
+                flashcards[cardIndex].interval = newInterval;
+                flashcards[cardIndex].nextReview = Date.now() + (newInterval * 24 * 60 * 60 * 1000);
+            }
+            saveFlashcards();
+            loadStudySession();
+        }
+
+        function deleteFlashcard(id) {
+            flashcards = flashcards.filter(c => c.id !== id);
+            saveFlashcards();
+            loadStudySession();
+        }
+
+        function renderAllFlashcards() {
+            const container = document.getElementById('fcAllList');
+            container.innerHTML = '';
+            flashcards.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'fc-list-item';
+                div.innerHTML = `
+                    <span><strong>[${c.subject}]</strong> ${c.front.substring(0, 50)}...</span>
+                    <button class="btn btn-danger" style="padding: 4px 8px;" onclick="deleteFlashcard(${c.id})">Excluir</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        loadStudySession();
+
+        // ================= SIMULADO DE CONCURSOS & QUIZ =================
+        let questions = JSON.parse(localStorage.getItem('estudo_questions')) || [
+            {
+                id: 1,
+                subject: 'Direito Administrativo',
+                board: 'CEBRASPE (Exemplo)',
+                statement: 'A revogação de um ato administrativo ocorre por motivo de conveniência e oportunidade, produzindo efeitos ex nunc (não retroativos), respeitados os direitos adquiridos.',
+                options: ['Certo', 'Errado'],
+                correct: 0,
+                comment: 'Gabarito: CERTO. Súmula 473 do STF: A administração pode anular seus próprios atos, quando eivados de vícios que os tornam ilegais (efeito ex tunc), ou revogá-los, por motivo de conveniência ou oportunidade, respeitados os direitos adquiridos (efeito ex nunc).'
+            },
+            {
+                id: 2,
+                subject: 'Direito Constitucional',
+                board: 'FGV (Exemplo)',
+                statement: 'São princípios expressos da Administração Pública previstos no caput do art. 37 da Constituição Federal de 1988, EXCETO:',
+                options: ['A) Legalidade', 'B) Impessoalidade', 'C) Moralidade', 'D) Supremacia do Interesse Público', 'E) Eficiência'],
+                correct: 3,
+                comment: 'Gabarito: Letra D. Os princípios expressos no art. 37, caput, formam o mnemônico LIMPE (Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência). A Supremacia do Interesse Público é um princípio implícito.'
+            },
+            {
+                id: 3,
+                subject: 'Língua Portuguesa',
+                board: 'FCC (Exemplo)',
+                statement: 'Assinale a alternativa em que o emprego do acento grave indicativo de crase está CORRETO:',
+                options: [
+                    'A) Entreguei o relatório à ela ontem.',
+                    'B) O servidor dirigiu-se à repartição pública.',
+                    'C) Começou à chover durante a prova.',
+                    'D) Estamos frente à frente com o examinador.'
+                ],
+                correct: 1,
+                comment: 'Gabarito: Letra B. Quem se dirige, dirige-se "a" algum lugar + artigo "a" antes do substantivo feminino "repartição" = crase obrigatória. Não ocorre crase antes de pronome pessoal (ela), verbo (chover) ou palavras repetidas.'
+            }
+        ];
+
+        let filteredQuestions = [];
+        let currentQIndex = 0;
+        let qScore = 0;
+        let qAnswered = 0;
+        let hasAnsweredCurrent = false;
+
+        function toggleQuestionFormType() {
+            const type = document.getElementById('newQType').value;
+            document.getElementById('mcFields').style.display = type === 'MC' ? 'block' : 'none';
+            document.getElementById('ceFields').style.display = type === 'CE' ? 'block' : 'none';
+        }
+
+        function saveNewQuestion() {
+            const subject = document.getElementById('newQSubject').value.trim() || 'Conhecimentos Gerais';
+            const board = document.getElementById('newQBoard').value.trim() || 'Inédita';
+            const type = document.getElementById('newQType').value;
+            const statement = document.getElementById('newQStatement').value.trim();
+            const comment = document.getElementById('newQComment').value.trim() || 'Sem comentário cadastrado.';
+
+            if (!statement) return alert('Digite o enunciado da questão!');
+
+            let options = [];
+            let correct = 0;
+
+            if (type === 'CE') {
+                options = ['Certo', 'Errado'];
+                correct = parseInt(document.getElementById('correctCE').value);
+            } else {
+                const a = document.getElementById('optA').value.trim();
+                const b = document.getElementById('optB').value.trim();
+                const c = document.getElementById('optC').value.trim();
+                const d = document.getElementById('optD').value.trim();
+                const e = document.getElementById('optE').value.trim();
+                if (!a || !b) return alert('Preencha pelo menos as alternativas A e B!');
+                options = [`A) ${a}`, `B) ${b}`];
+                if (c) options.push(`C) ${c}`);
+                if (d) options.push(`D) ${d}`);
+                if (e) options.push(`E) ${e}`);
+                correct = parseInt(document.getElementById('correctMC').value);
+            }
+
+            questions.push({ id: Date.now(), subject, board, statement, options, correct, comment });
+            localStorage.setItem('estudo_questions', JSON.stringify(questions));
+
+            document.getElementById('newQStatement').value = '';
+            document.getElementById('newQComment').value = '';
+            ['optA', 'optB', 'optC', 'optD', 'optE'].forEach(id => document.getElementById(id).value = '');
+            alert('Questão adicionada ao banco com sucesso!');
+            initQuizTab();
+        }
+
+        function initQuizTab() {
+            const select = document.getElementById('qFilterSubject');
+            const currentVal = select.value;
+            const subjects = [...new Set(questions.map(q => q.subject))];
+            select.innerHTML = '<option value="ALL">Todas as Matérias (' + questions.length + ')</option>';
+            subjects.forEach(s => {
+                const count = questions.filter(q => q.subject === s).length;
+                select.innerHTML += `<option value="${s}">${s} (${count})</option>`;
+            });
+            if (subjects.includes(currentVal)) select.value = currentVal;
+            startQuiz();
+        }
+
+        function startQuiz() {
+            const filter = document.getElementById('qFilterSubject').value;
+            filteredQuestions = filter === 'ALL' ? [...questions] : questions.filter(q => q.subject === filter);
+            filteredQuestions.sort(() => Math.random() - 0.5);
+            currentQIndex = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const commentBox = document.getElementById('qComment');
+            commentBox.style.display = 'none';
+            hasAnsweredCurrent = false;
+
+            if (filteredQuestions.length === 0) {
+                document.getElementById('qStatement').textContent = 'Nenhuma questão encontrada para este filtro.';
+                document.getElementById('qOptions').innerHTML = '';
+                return;
+            }
+
+            const q = filteredQuestions[currentQIndex];
+            document.getElementById('qSubjectTag').textContent = q.subject;
+            document.getElementById('qBoardTag').textContent = q.board;
+            document.getElementById('qStatement').textContent = `${currentQIndex + 1}. ${q.statement}`;
+
+            const optionsDiv = document.getElementById('qOptions');
+            optionsDiv.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(idx, btn);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx, btn) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            qAnswered++;
+
+            const q = filteredQuestions[currentQIndex];
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedIdx === q.correct) {
+                btn.classList.add('correct');
+                qScore++;
+            } else {
+                btn.classList.add('wrong');
+                if (allBtns[q.correct]) allBtns[q.correct].classList.add('correct');
+            }
+
+            updateScoreDisplay();
+            const commentBox = document.getElementById('qComment');
+            commentBox.textContent = q.comment;
+            commentBox.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            if (filteredQuestions.length === 0) return;
+            currentQIndex = (currentQIndex + 1) % filteredQuestions.length;
+            renderQuestion();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('qScore').textContent = qScore;
+            document.getElementById('qAnswered').textContent = qAnswered;
+            const pct = qAnswered > 0 ? Math.round((qScore / qAnswered) * 100) : 0;
+            document.getElementById('qPercent').textContent = `${pct}%`;
+        }
+
+        function resetQuizScore() {
+            qScore = 0;
+            qAnswered = 0;
+            updateScoreDisplay();
+            startQuiz();
+        }
+        initQuizTab();
+
+        // ================= MAPA MENTAL INTERATIVO =================
+        let mindMaps = JSON.parse(localStorage.getItem('estudo_mindmaps')) || [
+            {
+                id: 1,
+                title: 'Atos Administrativos (Exemplo)',
+                nodes: [
+                    { id: 1, parentId: null, text: 'Atos Administrativos', x: 420, y: 250, level: 0 },
+                    { id: 2, parentId: 1, text: 'Requisitos (CO-FI-FO-MO-OB)', x: 180, y: 120, level: 1 },
+                    { id: 3, parentId: 1, text: 'Atributos (P-A-T-I)', x: 660, y: 120, level: 1 },
+                    { id: 4, parentId: 1, text: 'Extinção', x: 420, y: 410, level: 1 },
+                    { id: 5, parentId: 2, text: 'Competência / Finalidade / Forma', x: 140, y: 45, level: 2 },
+                    { id: 6, parentId: 3, text: 'Presunção de Legitimidade', x: 700, y: 45, level: 2 },
+                    { id: 7, parentId: 4, text: 'Anulação (Ilegal) vs Revogação (Mérito)', x: 420, y: 480, level: 2 }
+                ]
+            }
+        ];
+        let currentMapIndex = 0;
+        let selectedNodeId = 1;
+        let draggingNode = null;
+
+        function saveMindMaps() {
+            localStorage.setItem('estudo_mindmaps', JSON.stringify(mindMaps));
+        }
+
+        function populateMapSelect() {
+            const select = document.getElementById('mmMapSelect');
+            select.innerHTML = '';
+            mindMaps.forEach((m, idx) => {
+                select.innerHTML += `<option value="${idx}" ${idx === currentMapIndex ? 'selected' : ''}>${m.title}</option>`;
+            });
+        }
+
+        function switchMindMap() {
+            currentMapIndex = parseInt(document.getElementById('mmMapSelect').value);
+            selectedNodeId = mindMaps[currentMapIndex].nodes[0].id;
+            renderMindMap();
+        }
+
+        function createNewMindMap() {
+            const title = prompt('Nome do novo Mapa Mental (Ex: Crase, Poderes Administrativos):');
+            if (!title || !title.trim()) return;
+            const newMap = {
+                id: Date.now(),
+                title: title.trim(),
+                nodes: [{ id: 1, parentId: null, text: title.trim(), x: 420, y: 250, level: 0 }]
+            };
+            mindMaps.push(newMap);
+            currentMapIndex = mindMaps.length - 1;
+            selectedNodeId = 1;
+            saveMindMaps();
+            renderMindMap();
+        }
+
+        function addChildNode() {
+            const map = mindMaps[currentMapIndex];
+            const parent = map.nodes.find(n => n.id === selectedNodeId) || map.nodes[0];
+            const text = prompt(`Novo subtópico ligado a "${parent.text}":`);
+            if (!text || !text.trim()) return;
+
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 130;
+            const newX = Math.max(80, Math.min(760, Math.round(parent.x + Math.cos(angle) * dist)));
+            const newY = Math.max(40, Math.min(480, Math.round(parent.y + Math.sin(angle) * dist)));
+
+            const newNode = {
+                id: Date.now(),
+                parentId: parent.id,
+                text: text.trim(),
+                x: newX,
+                y: newY,
+                level: Math.min(3, parent.level + 1)
+            };
+            map.nodes.push(newNode);
+            selectedNodeId = newNode.id;
+            saveMindMaps();
+            renderMindMap();
+        }
+
+        function editSelectedNode() {
+            const map = mindMaps[currentMapIndex];
+            const node = map.nodes.find(n => n.id === selectedNodeId);
+            if (!node) return;
+            const newText = prompt('Editar texto do bloco:', node.text);
+            if (newText && newText.trim()) {
+                node.text = newText.trim();
+                if (node.parentId === null) map.title = node.text;
+                saveMindMaps();
+                renderMindMap();
+            }
+        }
+
+        function deleteSelectedNode() {
+            const map = mindMaps[currentMapIndex];
+            const node = map.nodes.find(n => n.id === selectedNodeId);
+            if (!node) return;
+            if (node.parentId === null) {
+                if (mindMaps.length === 1) return alert('Você não pode excluir o único mapa existente.');
+                if (confirm(`Excluir o mapa inteiro "${map.title}"?`)) {
+                    mindMaps.splice(currentMapIndex, 1);
+                    currentMapIndex = 0;
+                    selectedNodeId = mindMaps[0].nodes[0].id;
+                    saveMindMaps();
+                    renderMindMap();
+                }
+                return;
+            }
+            // Remove o nó e todos os filhos conectados a ele
+            const toDelete = new Set([node.id]);
+            let added = true;
+            while (added) {
+                added = false;
+                map.nodes.forEach(n => {
+                    if (toDelete.has(n.parentId) && !toDelete.has(n.id)) {
+                        toDelete.add(n.id);
+                        added = true;
+                    }
+                });
+            }
+            map.nodes = map.nodes.filter(n => !toDelete.has(n.id));
+            selectedNodeId = map.nodes[0].id;
+            saveMindMaps();
+            renderMindMap();
+        }
+
+        function renderMindMap() {
+            populateMapSelect();
+            const canvas = document.getElementById('mmCanvas');
+            const svg = document.getElementById('mmSvg');
+            canvas.querySelectorAll('.mm-node').forEach(el => el.remove());
+            svg.innerHTML = '';
+
+            const map = mindMaps[currentMapIndex];
+
+            // Desenha as linhas de conexão
+            map.nodes.forEach(node => {
+                if (node.parentId !== null) {
+                    const parent = map.nodes.find(p => p.id === node.parentId);
+                    if (parent) {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', parent.x);
+                        line.setAttribute('y1', parent.y);
+                        line.setAttribute('x2', node.x);
+                        line.setAttribute('y2', node.y);
+                        line.setAttribute('stroke', '#475569');
+                        line.setAttribute('stroke-width', '2.5');
+                        svg.appendChild(line);
+                    }
+                }
+            });
+
+            // Desenha os nós arrastáveis
+            map.nodes.forEach(node => {
+                const el = document.createElement('div');
+                el.className = `mm-node level-${node.level} ${node.id === selectedNodeId ? 'selected' : ''}`;
+                el.style.left = node.x + 'px';
+                el.style.top = node.y + 'px';
+                el.textContent = node.text;
+
+                el.onpointerdown = (e) => {
+                    e.stopPropagation();
+                    selectedNodeId = node.id;
+                    draggingNode = node;
+                    el.setPointerCapture(e.pointerId);
+                    renderMindMap();
+                };
+
+                el.onpointermove = (e) => {
+                    if (!draggingNode || draggingNode.id !== node.id) return;
+                    const rect = canvas.getBoundingClientRect();
+                    node.x = Math.max(50, Math.min(rect.width - 50, Math.round(e.clientX - rect.left)));
+                    node.y = Math.max(30, Math.min(rect.height - 30, Math.round(e.clientY - rect.top)));
+                    renderMindMap();
+                };
+
+                el.onpointerup = () => {
+                    if (draggingNode) {
+                        draggingNode = null;
+                        saveMindMaps();
+                    }
+                };
+
+                el.ondblclick = (e) => {
+                    e.stopPropagation();
+                    selectedNodeId = node.id;
+                    editSelectedNode();
+                };
+
+                canvas.appendChild(el);
+            });
+        }
+    </script>
+</body>
+</html>
